@@ -1,0 +1,175 @@
+# Python Assignment 1
+
+import time
+
+SelectionInt = 0
+NumberList = []
+AddList = ""
+Sum = 0
+Number = 0
+SumInt = int(Sum)
+Average = 0
+NumberInt = int(Number)
+High = 0
+Low = 0
+Range = 0
+RangeInt = 0
+Guess = 0
+Respond = ""
+Valid = False
+
+
+# First Menu
+print("For Calculation App press 1")
+print("For Guessing Game press 2")
+print("To exit press 3")
+#Input to determine what selection
+Selection = input()
+
+#Testing for a number input
+if Selection.isnumeric() == False or Selection == "":
+    while Selection.isnumeric() == False:
+       print("Please Enter a Number:")
+       print("For Calculation App press 1")
+       print("For Guessing Game press 2")
+       print("To exit press 3")
+       Selection = input()
+       
+#Convert Selection from str to int       
+SelectionInt = int(Selection)
+
+#Testing that Selection is 1-3
+while SelectionInt != 1 and SelectionInt != 2 and SelectionInt != 3:
+    print("Please Enter a Number:")
+    print("For Calculation App press 1")
+    print("For Guessing Game press 2")
+    print("To exit press 3")   
+    Selection = input()
+    SelectionInt = int(Selection)
+
+while SelectionInt == 1 or SelectionInt == 2 or SelectionInt == 3:
+    #Selection 1
+    if SelectionInt == 1:
+        print("Add numbers to be calculated, leave blank to calculate:")
+        #Adding Numbers to list
+        AddList = input()
+        #(TESTING)print(AddList)
+        while AddList != "" or len(NumberList) < 2:
+            if AddList == "" and len(NumberList) < 2:
+                print("You need to add at least two numbers to the list")
+            else:
+                #Try to convert to int
+                try:
+                    int(AddList)
+                #if fails converting to int
+                except:
+                    print("You May Only Add Numbers")
+                #if passes add to list
+                else:
+                    NumberList.append(AddList)
+            #Adding another number
+            AddList = input()    
+        #Find Sum
+        for Number in NumberList:
+            NumberInt = int(Number)
+            SumInt = NumberInt + SumInt
+        Number = 0
+        Sum = str(SumInt)
+        print("The Sum is: " + Sum)
+        #Find the average
+        Average = SumInt / len(NumberList)
+        Average = str(Average)
+        print("The Average is: " + Average)
+        #Find The Highest Number
+        HighInt = int(High)
+        for Number in NumberList:
+            NumberInt = int(Number)
+            if NumberInt > HighInt:
+                HighInt = NumberInt
+        High = str(HighInt)        
+        print("The Hightest Number is: " + High)
+        #Find the Lowest
+        LowInt = int(Low)
+        Low = int(NumberList[0])
+        for Number in NumberList:
+            NumberInt = int(Number)
+            if NumberInt < Low:
+                Low = NumberInt
+        Low = str(Low)
+        print("The Lowest Number is: " + Low)
+        #Reset variables
+        NumberList = []
+        AddList = ""
+        Sum = 0
+        Number = 0
+        SumInt = int(Sum)
+        Average = 0
+        NumberInt = int(Number)
+        #Restart at Menu
+    #Selection 2
+    if SelectionInt == 2:
+        High = 100
+        Low = 1
+        print("Pick a Number from 1-100")
+        print("Press any key to begin")
+        input()
+        Range = High - Low
+        Guess = Range // 2 + 1
+        GuessStr = str(Guess)
+        #Loop while guess is not correct
+        while Respond != "CORRECT":
+            #Output Guess
+            print("Is your Number: " + GuessStr)
+            print("Is the Guess 'Too High', 'Too Low', or 'Correct'?")
+            Respond = input()
+            #Change Respond to all caps
+            Respond = Respond.upper()
+            #Testing response for valid input
+            if Respond == 'TOO HIGH' or 'TOO LOW' or 'CORRECT':
+                    Valid = True
+            while Valid == False:
+                print("Is the Guess 'Too High', 'Too Low', or 'Correct'?")
+                Respond = input()
+                Respond = Respond.upper()
+                if Respond == 'TOO HIGH' or 'TOO LOW' or 'CORRECT':
+                    Respond = Respond.upper()
+                    Valid = True
+            #Decision on what to do with valid input
+            if Respond == "TOO HIGH":
+                High = Guess
+                Range = High - Low
+                Guess = High - (Range // 2)
+                GuessStr = str(Guess)
+            elif Respond == "TOO LOW":
+                Low = Guess
+                Range = High - Low
+                Guess = Low + (Range // 2)
+                GuessStr = str(Guess)
+            if High == Low:
+                print("You Sir are a cheat")
+                break
+        #If Guess was correct
+        if Respond == "CORRECT" or High == Low:
+            Respond = ""
+            print("Thank You for Playing")
+            #Restart at Menu
+    #Selection 3
+    if SelectionInt == 3:
+        print("Thanks for Playing.")
+        print("Closing in 10 seconds")
+        time.sleep(10)
+        exit()
+    #Restart at Menu
+    print("\nFor Calculation App press 1")
+    print("For Guessing Game press 2")
+    print("To exit press 3")
+    #Input to determine what selection
+    Selection = input()
+    SelectionInt = int(Selection)
+    if Selection.isnumeric() == False:
+        while Selection.isnumeric() == False:
+            print("Please Enter a Number:")
+            print("For Calculation App press 1")
+            print("For Guessing Game press 2")
+            print("To exit press 3")
+            SelectionInt = input()
