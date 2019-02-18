@@ -1,0 +1,29 @@
+Respond = "y"
+AddAnother = "y"
+AddCord = ""
+AddPoint = ""
+AddNeighbor = ""
+CordList = []
+PointName = []
+Neighbors = []
+count = 0
+Points = [[PointName],[CordList]]
+
+while Respond != "":
+    print("Please Enter The X,Y For Coordinate",len(PointName) + 1)
+    PointName.append(len(PointName) + 1)
+    AddCord = input()
+    CordList.append(AddCord)
+    print("Would You Like To Add  Another Point?(Yes or Leave Blank For No)")
+    Respond = input()
+
+print(Points)
+
+#Not working - Trying to make a list of neighbors cords
+for point in PointName:
+    count += 1
+    while AddAnother != "":
+        print("What Neighbors Does Point",count,"have?")
+        AddNeighbor = input()
+        Neighbors.append(AddNeighbor)
+        AddAnother = input()
