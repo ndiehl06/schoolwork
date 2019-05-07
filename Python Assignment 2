@@ -1,29 +1,175 @@
-Respond = "y"
-AddAnother = "y"
-AddCord = ""
-AddPoint = ""
-AddNeighbor = ""
-CordList = []
-PointName = []
-Neighbors = []
-count = 0
-Points = [[PointName],[CordList]]
+#Assignment 02
+#IST261 Python
 
-while Respond != "":
-    print("Please Enter The X,Y For Coordinate",len(PointName) + 1)
-    PointName.append(len(PointName) + 1)
-    AddCord = input()
-    CordList.append(AddCord)
-    print("Would You Like To Add  Another Point?(Yes or Leave Blank For No)")
-    Respond = input()
+import math
 
-print(Points)
+graph = {}
+DistanceList = []
+src = ""
+dest = ""
 
-#Not working - Trying to make a list of neighbors cords
-for point in PointName:
-    count += 1
-    while AddAnother != "":
-        print("What Neighbors Does Point",count,"have?")
-        AddNeighbor = input()
-        Neighbors.append(AddNeighbor)
-        AddAnother = input()
+
+#Welcome menu
+def welcome():
+    PointCounter=1
+    print("Welcome to the Dijkstra's algorithm calculator. \nFollow the prompts accordingly to view your caclulations.")
+
+
+#Input data into 2d dictionary
+def input_cords():
+    Counter = 0
+    PointCounter = 1
+    AddCord = "Y"
+    AddNeighbor = "Y"
+    #Loop to Add Cord with Neighbors
+    while AddCord != "":
+        print("\nPlease Enter The X,Y For Coordinate",PointCounter,"\nLeave Blank for None")
+        AddCord = input()
+        #Point1 for Dist function
+        Point1=AddCord
+        #Adding To Point List
+        if AddCord != "":
+            #Data Validation for Cord Input
+            if AddCord in graph.keys():
+                print(AddCord,'Is already a Point')
+                continue
+            try: 
+                AddCordSplit = AddCord.split(",")
+                if AddCordSplit[0].isnumeric() == False:
+                    print("\nPlease Enter The X,Y for the point with numbers and comma included.")
+                    continue
+                elif AddCordSplit[1].isnumeric() == False:
+                    print("\nPlease Enter The X,Y for the point with numbers and comma included.")
+                    continue
+            except:
+                print("\nPlease Enter The X,Y for the point with comma included.")
+                continue
+            graph[AddCord] = {}
+            #Loop for adding Neighbors
+            while AddNeighbor != "" and AddCord != "":
+                #print(Counter) For Testing
+                print("What Neighbor does Point",PointCounter,"have?\nLeave Blank for None" )
+                AddNeighbor = input()
+                if AddNeighbor != "":
+                    #Data Validation for Cord Input
+                    try: 
+                        NeighborSplit = AddNeighbor.split(",")
+                        if NeighborSplit[0].isnumeric() == False:
+                            print("\nPlease Enter The X,Y for the neighbor with numbers and comma included.")
+                            continue
+                        elif NeighborSplit[1].isnumeric() == False:
+                            print("\nPlease Enter The X,Y for the neighbor with numbers and comma included.")
+                            continue 
+                    except:
+                        print("\nPlease Enter The X,Y for the neighbor with comma included.")
+                        continue
+                    
+                    #Getting Distance
+                    Point2=AddNeighbor
+                    distance(Point1,Point2)
+                    #Adding Neighbor
+                    graph[AddCord][AddNeighbor] = distance(Point1,Point2)
+            #Reset Add Neighbor for use in loop
+            AddNeighbor = "Y"
+            AddCord = "Y"
+            #Accumulating Counters
+            Counter += 1
+            PointCounter += 1
+            
+
+#Distance Function
+def distance(Point1,Point2):
+    dist = 0
+
+    #Parsing the points
+    Point1Split = Point1.split(",")
+    Point2Split = Point2.split(",")
+    
+    x1 = int(Point1Split[0])
+    x2 = int(Point2Split[0])
+    y1 = int(Point1Split[1])
+    y2 = int(Point2Split[1])
+
+    dist = (x2-x1)**2+(y2-y1)**2
+    dist = math.sqrt(dist)
+    #print(round(dist,2)) #For Testing
+    dist = round(dist,2)
+    return dist
+
+#Algorithm to find shortest path
+
+## USED CODE FROM http://www.gilles-bertrand.com/2014/03/dijkstra-algorithm-python-example-source-code-shortest-path.html
+## 
+
+
+def dijkstra(graph,src,dest,visited=[],distances={},predecessors={}):
+    """ calculates a shortest path tree routed in src
+    """    
+    # a few sanity checks
+    if src not in graph:
+        raise TypeError('The root of the shortest path tree cannot be found')
+    if dest not in graph:
+        raise TypeError('The target of the shortest path cannot be found')    
+    # ending condition
+    if src == dest:
+        # We build the shortest path and display it
+        path=[]
+        pred=dest
+        while pred != None:
+            path.append(pred)
+##            list.reverse(path)
+            pred=predecessors.get(pred,None)
+        print('shortest path: '+str(path)+" cost="+str(distances[dest])) 
+    else :     
+        # if it is the initial  run, initializes the cost
+        if not visited: 
+            distances[src]=0
+        # visit the neighbors
+        for neighbor in graph[src] :
+            if neighbor not in visited:
+                new_distance = distances[src] + graph[src][neighbor]
+                if new_distance < distances.get(neighbor,float('inf')):
+                    distances[neighbor] = new_distance
+                    predecessors[neighbor] = src
+        # mark as visited
+        visited.append(src)
+        # now that all neighbors have been visited: recurse                         
+        # select the non visited node with lowest distance 'x'
+        # run Dijskstra with src='x'
+        unvisited={}
+        for k in graph:
+            if k not in visited:
+                unvisited[k] = distances.get(k,float('inf'))        
+        x=min(unvisited, key=unvisited.get)
+        dijkstra(graph,x,dest,visited,distances,predecessors)
+        
+#Collecting start point
+def start():
+    valid = False
+    while valid == False:
+        print("What is you Starting point? Enter an X,Y Point.")
+        src = input()
+        if src in graph.keys():
+            valid = True
+        if src not in graph.keys():
+            print("\nPlease Enter a Valid Starting Point")
+    return src
+
+#Collecting end point
+def end():
+    valid = False
+    while valid == False:
+        print("\nWhat is you Ending point? Enter an X,Y Point.")
+        dest = input()
+        if dest in graph.keys():
+            valid = True
+        if dest not in graph.keys():
+            print("\nPlease Enter a Valid Ending Point")
+    return dest
+
+
+welcome()
+input_cords()
+src = start()
+dest = end()
+dijkstra(graph,dest,src)
