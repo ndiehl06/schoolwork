@@ -1,0 +1,257 @@
+import socket
+import sys
+import time
+import subprocess
+import os
+#from Crypto.Cipher import AES
+# Send from client to server
+
+def Create_Server_Socket():
+    while True:
+        #create a socket object
+        serversocket = socket.socket(
+        socket.AF_INET, socket.SOCK_STREAM)
+
+
+        #Setting IP Address
+        host = "127.0.0.1"
+        # Setting Port number
+        port = 9999
+
+        #bind to the port
+        serversocket.bind((host,port))
+        #queue up to 5 requests
+        
+        try:
+            serversocket.listen()
+            print("Listening for connection")
+
+            #establish a connection
+            clientsocket,host = serversocket.accept()
+            msg = clientsocket.recv(1024)
+            msg = str(msg,"utf-8")
+
+            if msg == "C":
+                while True:
+                    Command = clientsocket.recv(1024)
+                    if Command[:2].decode("utf-8") == 'cd':
+                        os.chdir(Command[3:].decode("utf-8"))
+                    cmd = subprocess.Popen(Command[:].decode("utf-8"), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+                    output_bytes = cmd.stdout.read() + cmd.stderr.read()
+                    output_str = str(output_bytes, "utf-8")
+                    clientsocket.send(str.encode(output_str + str(os.getcwd()) + "> "))
+                    print(output_str)
+            elif msg == "E":
+                Execute = clientsocket.recv(1024)
+                Execute = str(Execute,"utf-8")
+                print(Execute)
+                subprocess.run(Execute)
+            elif msg == "U":
+                MyDestinationFile = clientsocket.recv(1024)
+                MyDestinationFile = str(MyDestinationFile,"utf-8")
+                print(MyDestinationFile)
+                MyFileHandle2 = open(MyDestinationFile, "wb")
+                FileBuffer = clientsocket.recv(1024)
+                while FileBuffer:
+                    #FileBuffer = clientsocket.recv(1024)
+                    MyFileHandle2.write(FileBuffer)
+                    FileBuffer = clientsocket.recv(1024)
+                MyFileHandle2.close()
+                print("Done writing file")
+            else:
+                serversocket.close()
+                print("1Going back to main menu")
+                time.sleep(5)
+                menu()
+        except KeyboardInterrupt:
+            serversocket.close()
+            print("2Going back to main menu")
+            time.sleep(5)
+            menu()
+        except:
+            serversocket.close()
+
+def Create_Client_Socket():
+    #create a socket object
+
+    clientsocket = socket.socket(
+    socket.AF_INET, socket.SOCK_STREAM)
+
+    #get local machie name
+    host = "127.0.0.1" #socket.gethostname()
+    port = 9999
+    #Connect to server 
+    clientsocket.connect((host,port))
+
+    while True:
+        msg = clientsocket.recv(1024)
+        msg = str(msg,"utf-8")
+        print(msg)
+
+##    clientsocket.close()
+
+def menu():
+        MenuOption = ""
+        print("Please enter the letter c to be the client or s to be the server or CRLF to exit")
+        MenuOption = input()
+        MenuOption = MenuOption.lower()
+
+        while MenuOption != "c" and MenuOption != "s" and MenuOption != "":
+            print("Please make a proper selection")
+            print("Please enter the letter c to be the client or s to be the server or CRLF to exit")
+            MenuOption = input()
+            MenuOption = MenuOption.lower()
+
+        while MenuOption == "c" or MenuOption == "s" or MenuOption == "": 
+            if MenuOption == "c":
+                break
+            elif MenuOption == "s":
+                Create_Server_Socket()
+            elif MenuOption == "":
+                print("Closing in 10 seconds")
+                time.sleep(10)
+                exit()
+        
+        print("Please enter the letter c(command), f(file), e(executable) or CRLF to exit")
+        MenuOption2 = input()
+        MenuOption2 = MenuOption2.lower()
+
+        while MenuOption2 != "c" and MenuOption2 != "f" and MenuOption2 != "e" and MenuOption2 != "":
+            print("Please make a proper selection")
+            print("\nPlease enter the letter c(command), f(file), e(executable) or CRLF to exit")
+            MenuOption2 = input()
+            MenuOption2 = MenuOption2.lower()
+            
+        while MenuOption2 == "c" or MenuOption2 == "f" or MenuOption2 == "e" or MenuOption2 == "": 
+            if MenuOption2 == "c":
+                OScmd()
+            elif MenuOption2 == "f":
+                UploadFile()
+            elif MenuOption2 == "e":
+                ExecuteProgram()   
+            elif MenuOption2 == "":
+                print("Closing in 10 seconds")
+                time.sleep(10)
+                exit()
+
+def ExecuteProgram():
+    #create a socket object
+    clientsocket = socket.socket(
+    socket.AF_INET, socket.SOCK_STREAM)
+
+    #get local machie name
+    host = "127.0.0.1" #socket.gethostname()
+    port = 9999
+
+    #Connect to server 
+    clientsocket.connect((host,port))
+
+    # program to exucute
+    Execute = input("Please enter an executable file.\n")
+    
+    #Sending varible for if statement to server
+    msg = "E"
+    clientsocket.send(msg.encode("utf-8"))
+    #Sending command to server
+    clientsocket.send(Execute.encode("utf-8"))
+    
+    menu()
+
+def OScmd():
+    #create a socket object
+    clientsocket = socket.socket(
+    socket.AF_INET, socket.SOCK_STREAM)
+
+    #get local machie name
+    host = "127.0.0.1" #socket.gethostname()
+    port = 9999
+
+    #Connect to server 
+    clientsocket.connect((host,port))
+
+    #Sending varible for if statement to server
+    msg = "C"
+    clientsocket.send(msg.encode("utf-8"))
+
+    print("\n\nPlease enter a command to run.")
+    print("Type quit to go back to the main menu")
+
+    while True:
+        #Getting Command
+        Command = input()
+
+        if Command == "quit":
+            clientsocket.close()
+            menu()
+
+        #Sending command to server
+        clientsocket.send(Command.encode("utf-8"))
+
+        #Getting Output back
+        CommandOutput = clientsocket.recv(1024)
+        CommandOutput = str(CommandOutput,"utf-8")
+        print(CommandOutput, end="")
+    
+
+    menu()
+
+def UploadFile():
+    KB = 1024
+    clientsocket = socket.socket(
+    socket.AF_INET, socket.SOCK_STREAM)
+
+    #get local machie name
+    host = "127.0.0.1" #socket.gethostname()
+    port = 9999
+    #Connect to server 
+    clientsocket.connect((host,port))
+
+    MyFileToBeCopied=input("Please input the name of the file to be copied.\n")
+    try:
+        MyFileHandle1 = open(MyFileToBeCopied, "rb")
+    except:
+        print("file does not exist.\n")
+
+
+    try:
+        MyDestinationFile = input("Please input the name of the file to paste to.\n")
+    except:
+        print("must enter a proper file name.\n")
+        MyFileHandle1.close()
+        sys.exit()
+
+
+    #try:
+    #    MyFileHandle2 = open(MyDestinationFile, "wb")
+    #except:
+    #    print("destination file unable to be opened.\n")
+    #    MyFileHandle1.close()
+    #    MyFileHandle2.close()
+    #    sys.exit()
+
+    #Sending varible for if statement to server
+    msg = "U"
+    clientsocket.send(msg.encode("utf-8"))
+
+    #Sending File name to server
+    clientsocket.send(MyDestinationFile.encode("utf-8"))
+
+    FileBuffer = MyFileHandle1.read(KB)
+    while FileBuffer:
+        #MyFileHandle2.write(FileBuffer)
+        clientsocket.send(FileBuffer)
+        FileBuffer = MyFileHandle1.read(KB)
+
+    print("Finished copying file")
+    MyFileHandle1.close()
+    clientsocket.close()
+    menu()
+
+
+def main():
+    print("Welcome to netcat like program")
+    menu()
+
+
+######## Main Program
+main()
